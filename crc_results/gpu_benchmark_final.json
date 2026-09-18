@@ -1,0 +1,31 @@
+{
+  "gpu": "NVIDIA A100-SXM4-80GB",
+  "torch": "2.5.1",
+  "python": "3.11.11",
+  "compile_and_load_seconds": 1.208343556150794,
+  "edge_comparisons": 212,
+  "frames": 340,
+  "points": 292606,
+  "runs": [
+    {
+      "batch_size": 384,
+      "repeat": 0,
+      "seconds": 50.31545607466251,
+      "link_seconds": 50.08345958404243,
+      "assembly_seconds": 0.22935652174055576,
+      "adjacency_differences": 0,
+      "tracks_exact": true,
+      "adjacency_tracks_exact": true
+    },
+    {
+      "batch_size": 384,
+      "repeat": 1,
+      "seconds": 50.32399979000911,
+      "link_seconds": 50.0803812998347,
+      "assembly_seconds": 0.22829560190439224,
+      "adjacency_differences": 0,
+      "tracks_exact": true,
+      "adjacency_tracks_exact": true
+    }
+  ]
+}

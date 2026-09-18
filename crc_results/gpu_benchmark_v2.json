@@ -1,0 +1,21 @@
+{
+  "gpu": "NVIDIA A100-SXM4-80GB",
+  "torch": "2.5.1",
+  "python": "3.11.11",
+  "compile_and_load_seconds": 54.87150070304051,
+  "edge_comparisons": 212,
+  "frames": 340,
+  "points": 292606,
+  "runs": [
+    {
+      "batch_size": 384,
+      "repeat": 0,
+      "seconds": 49.995739369187504,
+      "link_seconds": 49.763614857103676,
+      "assembly_seconds": 0.23180649895220995,
+      "adjacency_differences": 0,
+      "tracks_exact": true,
+      "adjacency_tracks_exact": true
+    }
+  ]
+}

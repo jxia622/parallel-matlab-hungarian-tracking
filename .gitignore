@@ -1,0 +1,25 @@
+# Research inputs and generated MATLAB artifacts
+*.mat
+*.h5
+*.hdf5
+
+# Cluster/runtime output
+*.log
+slurm-*.out
+crc_results/torch_extensions/
+
+# Compiled Python/CUDA output
+*.o
+*.so
+*.dylib
+*.dll
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Environments and editor/OS metadata
+.venv/
+venv/
+.DS_Store
+._*
+

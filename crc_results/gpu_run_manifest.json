@@ -1,0 +1,25 @@
+{
+  "candidate": "CUDA v2",
+  "oracle_job": 24121482,
+  "first_v2_job": 3979947,
+  "final_verification_job": 3980164,
+  "parameters": {
+    "method": "Hungarian",
+    "max_linking_distance": 8,
+    "max_gap_closing": 1,
+    "max_batch_size": 384,
+    "precision": "float64"
+  },
+  "files": {
+    "gpu/munkres_cuda.cu": "22d0882815d33162fbb6c6367c81c127644301085c4aba06a0412e76c7936179",
+    "gpu/binding.cpp": "3ca8d377b5b9808c910687e17b8aa722ec20ff4ed7f094c8a185b05bc6d08ded",
+    "gpu/gpu_tracker.py": "4b17dd8f14e086032ff60b541fd194604423a366b849f3b06631272e67f64435",
+    "gpu/run_gpu_tracking.py": "5d4d0a1af16c864d394f910e1767188d20919ffd8f083c7987d8a92cdd80c1b0",
+    "gpu/validate_gpu.py": "cf1736da4eb16584476b1b88cbf2873c5679d9b4d936c8834a3339e1a7c8e867",
+    "gpu/check_export.py": "f099318324fbbe884e7132ea9fb64cdf174dca9a2ba43d04206f8cd32912f3e4",
+    "gpu/run_gpu.sbatch": "d2f816e73f035a766c09765161b23a547bb14378c58e30a19572e47ad9f8e428"
+  },
+  "status": "Full-block GPU timings and exact output checks passed; saved MAT file verified in native MATLAB.",
+  "native_matlab_verification_job": 24125249,
+  "post_run_changes": "MAT loading in CLI/checker now requests declared MATLAB dtypes rather than raw storage dtypes; no tracking arithmetic changed."
+}

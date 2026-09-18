@@ -1,0 +1,21 @@
+{
+  "cluster": "smp",
+  "node": "smp-n227",
+  "job_id": 24121422,
+  "matlab": "R2025a",
+  "allocated_cpu_cores": 5,
+  "matlab_workers": 4,
+  "memory_gb": 24,
+  "gpu_used": false,
+  "fixture": "EPCR1_2/bloc1_track.mat",
+  "fixture_sha256": "44f82ec553d2df65df1ef9892748532bccc9de71e72cd17a716ba8563ec31731",
+  "files": {
+    "simpletracker_fast.m": "9542cf8f5d2fe763fd6c97d8d8a9b7e0156dd0ffb6dc0452c043a75969d18d2d",
+    "benchmark_tracking.m": "a80b647357f853c57f0465207e77591f96556407ed52cef7cacf7c49818057ae",
+    "run_crc_validation.m": "c59f7029c410275f78e85a3b78a778bdeda2bc5fcf59b1c1ff162c274755a7b3",
+    "run_crc_validation.sh": "2c655c2fbf0344861e210fbfe3583f9cea7ee6f0176e7afd6bba93c482910e7e",
+    "tests/test_tracking_equivalence.m": "9744fa4e7362b78a6fb99cc2af831f0c204e392f88edc6d05991c42d9d233d20",
+    "tests/simpletracker_serial_reference.m": "a4b39fca0246f75cf045756445a43f345a00b5cdc246d7f56a2d23b112d0db95"
+  },
+  "timing_scope": "Tracking only. Excludes file load/save, pool startup, and equality checks. Small excerpt: warm 3-repeat medians. Full block: one run per method, original first."
+}

@@ -1,0 +1,12 @@
+{
+  "matlabExecuted": false,
+  "syntaxFilesChecked": 6,
+  "assignmentAndGapCodeUnchanged": true,
+  "serialReferenceOnlyRenamesAndChangesLoops": true,
+  "fixture": "private real-data tracking block (not included)",
+  "frames": 340,
+  "points": 292606,
+  "savedTracks": 102026,
+  "pythonGraphReconstructionExact": true,
+  "limitation": "Python graph check uses saved tracks to reconstruct edges; it does not validate MATLAB assignment, parfor execution, or runtime speedup."
+}

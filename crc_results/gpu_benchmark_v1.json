@@ -1,0 +1,71 @@
+{
+  "gpu": "NVIDIA A100-SXM4-40GB",
+  "torch": "2.5.1",
+  "python": "3.11.11",
+  "compile_and_load_seconds": 55.80427343491465,
+  "edge_comparisons": 212,
+  "frames": 340,
+  "points": 292606,
+  "runs": [
+    {
+      "batch_size": 32,
+      "repeat": 0,
+      "seconds": 405.3208303581923,
+      "link_seconds": 405.0973258209415,
+      "assembly_seconds": 0.22319586342200637,
+      "adjacency_differences": 0,
+      "tracks_exact": true,
+      "adjacency_tracks_exact": true
+    },
+    {
+      "batch_size": 32,
+      "repeat": 1,
+      "seconds": 405.3589833653532,
+      "link_seconds": 405.12411634111777,
+      "assembly_seconds": 0.22210860392078757,
+      "adjacency_differences": 0,
+      "tracks_exact": true,
+      "adjacency_tracks_exact": true
+    },
+    {
+      "batch_size": 64,
+      "repeat": 0,
+      "seconds": 311.85391952935606,
+      "link_seconds": 311.6188396778889,
+      "assembly_seconds": 0.2227090010419488,
+      "adjacency_differences": 0,
+      "tracks_exact": true,
+      "adjacency_tracks_exact": true
+    },
+    {
+      "batch_size": 64,
+      "repeat": 1,
+      "seconds": 311.8123547411524,
+      "link_seconds": 311.57569624623284,
+      "assembly_seconds": 0.2238484611734748,
+      "adjacency_differences": 0,
+      "tracks_exact": true,
+      "adjacency_tracks_exact": true
+    },
+    {
+      "batch_size": 128,
+      "repeat": 0,
+      "seconds": 227.26439838670194,
+      "link_seconds": 227.02930129505694,
+      "assembly_seconds": 0.22253942489624023,
+      "adjacency_differences": 0,
+      "tracks_exact": true,
+      "adjacency_tracks_exact": true
+    },
+    {
+      "batch_size": 128,
+      "repeat": 1,
+      "seconds": 227.26651432272047,
+      "link_seconds": 227.03064266312867,
+      "assembly_seconds": 0.22311368212103844,
+      "adjacency_differences": 0,
+      "tracks_exact": true,
+      "adjacency_tracks_exact": true
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "simpletracker.m": {
+    "source": "Jack SRU code/Original SRU/simpletracker.m",
+    "sha256": "f516b0ad0448ad13dc019b2bfd8dcb2defabbf85473ec6fa6b9f5d52bc04190a"
+  },
+  "hungarianlinker.m": {
+    "source": "Jack SRU code/Original SRU/hungarianlinker.m",
+    "sha256": "958165690a299635ef656d1c1537601bcd20e088e49523d64e5478a3a37a8e72"
+  },
+  "nearestneighborlinker.m": {
+    "source": "Jack SRU code/Original SRU/nearestneighborlinker.m",
+    "sha256": "2c4754dce8275aaca4101a009107eccbfd8dc32d721b8d140d21245cba7a22f2"
+  },
+  "munkres.m": {
+    "source": "Jack SRU code/Original SRU/munkres.m",
+    "sha256": "afe354e97312d88be2970793197ce1fee11794ef50a2a6a0e18d4a0e93038057"
+  }
+}

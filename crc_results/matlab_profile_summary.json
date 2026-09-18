@@ -1,0 +1,67 @@
+[
+  {
+    "function": "run",
+    "inclusive_seconds": 5.002646995363264,
+    "calls": 1
+  },
+  {
+    "function": "export_gpu_oracle",
+    "inclusive_seconds": 5.002452995324665,
+    "calls": 1
+  },
+  {
+    "function": "hungarianlinker",
+    "inclusive_seconds": 4.977800990419722,
+    "calls": 8
+  },
+  {
+    "function": "munkres",
+    "inclusive_seconds": 4.913542977634477,
+    "calls": 8
+  },
+  {
+    "function": "munkres>outerplus",
+    "inclusive_seconds": 3.1359236239463186,
+    "calls": 22898
+  },
+  {
+    "function": "setdiff",
+    "inclusive_seconds": 0.022265004430008256,
+    "calls": 8
+  },
+  {
+    "function": "setdiff>setdiffR2012a",
+    "inclusive_seconds": 0.020459004070673206,
+    "calls": 8
+  },
+  {
+    "function": "ismember",
+    "inclusive_seconds": 0.0109710021828709,
+    "calls": 8
+  },
+  {
+    "function": "ismember>ismemberR2012a",
+    "inclusive_seconds": 0.010174002024293916,
+    "calls": 8
+  },
+  {
+    "function": "ismember>ismemberBuiltinTypes",
+    "inclusive_seconds": 0.00880900175270347,
+    "calls": 8
+  },
+  {
+    "function": "unique",
+    "inclusive_seconds": 0.006824001357753262,
+    "calls": 8
+  },
+  {
+    "function": "unique>uniqueR2012a",
+    "inclusive_seconds": 0.0006440001281349794,
+    "calls": 8
+  },
+  {
+    "function": "trace",
+    "inclusive_seconds": 0.0005800001154010685,
+    "calls": 8
+  }
+]

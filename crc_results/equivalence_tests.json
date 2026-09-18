@@ -1,0 +1,17 @@
+{
+  "serial": {
+    "comparisons": 216,
+    "passed": 1,
+    "parallel": 0
+  },
+  "parallel": {
+    "comparisons": 216,
+    "passed": 1,
+    "parallel": 1
+  },
+  "total_comparisons": 432,
+  "matlab": "R2025a",
+  "cluster": "Pitt CRC smp",
+  "job_id": 24121420,
+  "status": "Tests passed; job subsequently cancelled to shorten benchmark workload."
+}
