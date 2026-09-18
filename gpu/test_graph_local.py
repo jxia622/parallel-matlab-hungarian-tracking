@@ -62,4 +62,9 @@ for trial in range(102):
         path = Path(tmp)/'roundtrip.mat'
         savemat(path,payload)
         validate_result(result,points,loadmat(path))
+        general_payload = dict(payload)
+        general_payload['detections'] = general_payload.pop('SR_Localizations')
+        general_path = Path(tmp)/'general_roundtrip.mat'
+        savemat(general_path,general_payload)
+        validate_result(result,points,loadmat(general_path),'detections')
 print('Passed 102 independent graph and MATLAB serialization cases.')

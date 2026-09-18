@@ -23,11 +23,11 @@ substantial overheads, so keeping a pool alive matters for repeated use.
 - All real-data timing runs matched the original `tracks`, `adjacency_tracks`,
   and sparse `A` exactly with `isequaln`, including order and NaN positions.
 - The assignment and gap-closing code and solver dependencies are unchanged.
-- The tested reference is the copy from Jack SRU code/Original SRU, identical
-  to the drive's Zahra copy. Bal's supplied folder does not contain its own
-  SimpleTracker dependency, so the deployed version still needs confirmation.
-- These tests do not establish equivalence of the separate Python/CUDA
-  localization stage to Bal's localization script.
+- The tested reference is one of two byte-identical SimpleTracker copies found
+  alongside the supplied workflow. The three-script folder did not contain
+  its own dependency, so the deployed copy still needs confirmation.
+- These tests do not establish equivalence of any upstream point-detection or
+  localization stage.
 
 ## Execution
 
@@ -37,12 +37,11 @@ The earlier job 24121420 completed and saved all 432 correctness tests, then
 was cancelled to shorten the initial timing workload. No user jobs were
 cancelled. The completed job shut down its MATLAB pool.
 
-Input: MB SRU Example Mice Kidney/EPCR1_2/bloc1_track.mat. This is an example
-block, not a complete performance study across the user's acquisitions.
+Input: one private 340-frame real-data tracking block. It is not included in
+the repository and is not a complete performance study across datasets.
 Hashes, raw timings, MATLAB reports, and logs are in crc_results.
 
-Remote package:
-`/ihome/kkim/xiac/bal-tracking-validation-20260918/tracking_acceleration`
+The remote validation package was run from a private CRC work directory.
 
 ## Interpretation and next step
 

@@ -1,12 +1,15 @@
-# GPU-accelerated ULM tracking
+# Parallel MATLAB-compatible Hungarian tracking
 
-This repository accelerates the SimpleTracker/Hungarian stage of a
-super-resolution ultrasound pipeline while preserving the existing MATLAB
-tracking result. It starts from an `SR_Localizations` MATLAB cell array. SVD,
-localization, Kalman smoothing, density images, and velocity maps remain
-outside this package.
+This repository parallelizes frame-to-frame Hungarian point tracking while
+preserving the output conventions and decision order of a reference MATLAB
+SimpleTracker implementation. It provides a conservative MATLAB CPU path and
+a CUDA implementation for finite double-precision 2D point sequences.
 
-On the validated 340-frame block (292,606 localizations), CUDA v2 completed
+The file interface accepts any MATLAB cell-array variable containing one
+N-by-2 point array per frame. `SR_Localizations` remains the default for
+backward compatibility with the research pipeline that motivated the work.
+
+On the validated 340-frame block (292,606 points), CUDA v2 completed
 tracking in 50.32 seconds on an A100-SXM4-80GB. The original four-worker MATLAB
 tracker took 141.48 seconds: a 2.81x speedup. All 102,026 tracks and 190,580
 links matched MATLAB exactly, including order, NaN positions, sparse adjacency,
@@ -30,25 +33,34 @@ and [CRC_BENCHMARK.md](CRC_BENCHMARK.md).
 - `crc_results/*.json`: compact benchmark and validation records. Research
   data, generated MAT files, compiled extensions, and raw logs are excluded.
 
-## Run the GPU tracker on Pitt CRC
+## Run the GPU tracker on a Slurm cluster
 
-The input must be a MATLAB v7 file containing `SR_Localizations`, with one
-finite double-precision N-by-2 coordinate array per frame. From the repository
-root, submit one complete existing block:
+The input must be a MATLAB v7 file containing one cell array with a finite
+double-precision N-by-2 coordinate array per frame. For the default variable
+name, submit one complete temporal sequence from the repository root:
 
 ```bash
 sbatch gpu/track_file.sbatch \
-  /absolute/path/input_localizations.mat \
+  /absolute/path/input_points.mat \
   /absolute/path/new_tracks.mat
 ```
 
-The job defaults to Pitt's `python/pytorch_251_311_cu124` module and the
-existing `gpu-ulm-cu124` environment. Override them when needed:
+The included job file is cluster-neutral. If the CUDA-enabled PyTorch
+environment is not already active for batch jobs, set its module and virtual
+environment before submission:
 
 ```bash
 export TRACKING_PYTORCH_MODULE=python/pytorch_251_311_cu124
 export TRACKING_VENV=/absolute/path/to/cuda-venv
 sbatch gpu/track_file.sbatch /absolute/input.mat /absolute/output.mat
+```
+
+Cluster-specific scheduling options can be supplied to `sbatch`. For example,
+the validated Pitt CRC configuration used:
+
+```bash
+sbatch --clusters=gpu --partition=a100_nvlink --account=kkim \
+  gpu/track_file.sbatch /absolute/input.mat /absolute/output.mat
 ```
 
 To compare against a MATLAB oracle before saving:
@@ -59,9 +71,24 @@ sbatch gpu/track_file.sbatch \
   --reference /absolute/matlab_reference.mat
 ```
 
-The output contains `SR_Localizations`, `tracks`, `adjacency_tracks`, sparse
-`A`, and JSON provenance/timing metadata. Existing output files are never
-overwritten. The first CUDA extension build takes roughly 55 seconds; cached
+For another MATLAB variable name, add `--points-variable`:
+
+```bash
+sbatch gpu/track_file.sbatch input.mat output.mat \
+  --points-variable detections
+```
+
+The distance cutoff is also configurable:
+
+```bash
+sbatch gpu/track_file.sbatch input.mat output.mat \
+  --points-variable detections --max-linking-distance 12
+```
+
+The output preserves the input point variable name and adds `tracks`,
+`adjacency_tracks`, sparse `A`, and JSON provenance/timing metadata. Existing
+output files are never overwritten. The first CUDA extension build takes
+roughly 55 seconds; cached
 loading took about 1.2 seconds in validation.
 
 ## Supported behavior
@@ -112,21 +139,19 @@ reduction used for the Munkres penalty can sum finite costs in a different
 order from MATLAB; inputs extremely close to a power-of-ten penalty boundary
 need additional validation.
 
-The tracker begins with the exact same saved localizations as MATLAB. It does
-not establish end-to-end equivalence with a separate float32 CUDA localization
-pipeline. Validate that boundary independently before combining the stages.
+The tracker begins with the exact same saved points as MATLAB. It does not
+establish equivalence with upstream detectors that produce different coordinate
+precision. Validate that boundary independently before combining stages.
 
 The original research files remain unchanged. See [NOTICE.md](NOTICE.md) before
 changing this repository's visibility or redistributing the baseline sources.
 
-## Findings from source inspection
+## Reference implementation findings
 
-Bal's tracking script processes blocks serially with linking distance 8 and
-MaxGapClosing 1. Its SimpleTracker dependency is absent from the uploaded
-folder. The copies under Jack SRU code/Original SRU and Zahra Original SRU
-code/SimpleTracker/SimpleTracker match byte for byte. The provisional baseline
-is copied from Jack's folder, with SHA-256 hashes in baseline/manifest.json.
-Confirm this is the deployed dependency before drawing conclusions.
+The supplied workflow processes blocks serially with linking distance 8 and
+`MaxGapClosing = 1`. Its SimpleTracker dependency was stored separately from
+the three pipeline scripts. Two available dependency copies matched byte for
+byte; the reference snapshot and SHA-256 hashes are in `baseline/`.
 
 That dependency already uses parfor for adjacent-frame assignment and track
 extraction. Each track allocates a buffer sized to *all points in the block*,
@@ -150,8 +175,8 @@ may use substantial RAM; choose worker count after measuring one whole block.
 Requires MATLAB plus Parallel Computing Toolbox. Run it on a compute node,
 not a shared login node.
 
-After transferring this folder and a representative MAT file containing
-SR_Localizations to the compute node:
+After transferring this folder and a representative MAT file containing a
+point-cell variable to the compute node:
 
 ```matlab
 cd('/path/to/tracking_acceleration')
@@ -159,7 +184,8 @@ addpath(pwd, fullfile(pwd,'tests'), fullfile(pwd,'baseline'))
 test_tracking_equivalence(false)
 parpool('local',4) % adjust to allocated CPUs and RAM
 test_tracking_equivalence(true)
-report = benchmark_tracking('/path/to/bloc1_track.mat',4,3);
+report = benchmark_tracking('/path/to/block1.mat',4,3,true,true, ...
+    'detections',12,2);
 save('benchmark_report.mat','report')
 ```
 
@@ -174,22 +200,25 @@ arguments can omit serial timing and warmup for a single-pass full-block check. 
 Also measure full batch wall time for production throughput.
 
 ```matlab
-files = {'/path/to/bloc1_track.mat','/path/to/bloc2_track.mat'};
+files = {'/path/to/block1.mat','/path/to/block2.mat'};
 t = tic;
-report = run_tracking_batch(files,'/path/to/new_verified_output','blocks',true);
+report = run_tracking_batch(files,'/path/to/new_verified_output', ...
+    'blocks',true,'detections',12,2);
 wallSeconds = toc(t);
 ```
 
 The batch requires a new output directory. It verifies each block before
 saving. Verification reruns the original serial algorithm and is deliberately
 expensive; use false only after validation on representative data. Saved files
-include SR_Localizations, tracks, adjacency_tracks, and timing/provenance info.
+include the named point variable, tracks, adjacency_tracks, and
+timing/provenance info.
 Input order determines output numbering; supply files in acquisition order.
-The function explicitly uses distance 8 and gap limit 1, matching Bal's script.
+Both parameters are configurable; distance 8 and gap limit 1 remain the
+defaults that match the validated reference workflow.
 
 ## Validation record
 
-The uploaded tracking script also contains an extra `]` after `clear
+The supplied tracking script also contains an extra `]` after `clear
 SR_Localizations`; the snapshot is retained as supplied, not executed. The
 batch runner replaces its machine-specific paths with explicit inputs.
 

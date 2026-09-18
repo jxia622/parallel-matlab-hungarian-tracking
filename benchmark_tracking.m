@@ -1,4 +1,4 @@
-function report = benchmark_tracking(inputFile, workers, repeats, includeSerial, warmup)
+function report = benchmark_tracking(inputFile, workers, repeats, includeSerial, warmup, pointsVariable, maxLinkingDistance, maxGapClosing)
 % Compare against the actual already-parallel baseline with exact checks.
 % includeSerial=false omits a potentially expensive serial timing.
 % warmup=false is for a quick single-pass comparison, not steady-state timing.
@@ -6,10 +6,19 @@ if nargin < 2, workers = 4; end
 if nargin < 3, repeats = 3; end
 if nargin < 4, includeSerial = true; end
 if nargin < 5, warmup = true; end
+if nargin < 6, pointsVariable = 'SR_Localizations'; end
+if nargin < 7, maxLinkingDistance = 8; end
+if nargin < 8, maxGapClosing = 1; end
+assert(isvarname(pointsVariable), 'pointsVariable must be a MATLAB variable name.');
+assert(isfinite(maxLinkingDistance) && maxLinkingDistance >= 0, ...
+    'maxLinkingDistance must be finite and nonnegative.');
+assert(isfinite(maxGapClosing) && maxGapClosing >= 1 && fix(maxGapClosing) == maxGapClosing, ...
+    'maxGapClosing must be a positive integer.');
 root = fileparts(mfilename('fullpath'));
 addpath(root,fullfile(root,'baseline'),fullfile(root,'tests'));
-d = load(inputFile,'SR_Localizations');
-points = d.SR_Localizations;
+d = load(inputFile,pointsVariable);
+assert(isfield(d,pointsVariable), 'Missing %s in %s',pointsVariable,inputFile);
+points = d.(pointsVariable);
 t = tic;
 pool = gcp('nocreate');
 if isempty(pool), pool = parpool('local',workers); end
@@ -18,10 +27,14 @@ report.poolSetupSeconds = toc(t);
 report.matlabVersion = version;
 report.workers = pool.NumWorkers;
 report.inputFile = inputFile;
+report.pointsVariable = pointsVariable;
+report.maxLinkingDistance = maxLinkingDistance;
+report.maxGapClosing = maxGapClosing;
 report.frames = numel(points);
 report.points = sum(cellfun(@(x) size(x,1),points));
 report.warmup = warmup;
-args = {'MaxLinkingDistance',8,'MaxGapClosing',1,'Debug',false};
+args = {'MaxLinkingDistance',maxLinkingDistance, ...
+    'MaxGapClosing',maxGapClosing,'Debug',false};
 methods = {@() simpletracker(points,args{:}), ...
     @() simpletracker_fast(points,args{:},'UseParallel',true)};
 report.methodNames = {'original_parallel','optimized_parallel'};

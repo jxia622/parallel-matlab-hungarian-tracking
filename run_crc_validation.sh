@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=bal-track-check
+#SBATCH --job-name=hungarian-cpu-test
 #SBATCH --clusters=smp
 #SBATCH --nodes=1
 #SBATCH --ntasks=1

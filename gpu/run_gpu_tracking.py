@@ -1,7 +1,7 @@
-"""Run the CUDA candidate on an existing MATLAB SR_Localizations file.
+"""Run MATLAB-compatible Hungarian tracking on a MATLAB point-cell file.
 
 Example (on an allocated GPU node):
-  python gpu/run_gpu_tracking.py INPUT.mat OUTPUT.mat --reference MATLAB.mat
+  python gpu/run_gpu_tracking.py INPUT.mat OUTPUT.mat --points-variable points
 No existing output is overwritten. MATLAB v7.3 inputs must be exported as v7.
 """
 import argparse
@@ -9,6 +9,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import re
 import tempfile
 import time
 
@@ -24,11 +25,13 @@ def to_cells(vectors):
     return cells
 
 
-def validate_result(result, points, reference):
-    expected_points = reference['SR_Localizations'].ravel(order='F')
+def validate_result(result, points, reference, points_variable='SR_Localizations'):
+    if points_variable not in reference:
+        raise ValueError(f'Reference does not contain {points_variable!r}')
+    expected_points = reference[points_variable].ravel(order='F')
     if len(expected_points) != len(points) or not all(
             np.array_equal(a, b) for a, b in zip(points, expected_points)):
-        raise ValueError('Reference localizations differ from the input')
+        raise ValueError('Reference points differ from the input')
     expected_tracks = reference['tracks'].ravel(order='F')
     expected_adj = reference['adjacency_tracks'].ravel(order='F')
     if len(expected_tracks) != len(result['tracks']) or not all(
@@ -48,14 +51,21 @@ def main():
     parser.add_argument('input', type=Path)
     parser.add_argument('output', type=Path)
     parser.add_argument('--reference', type=Path, help='MATLAB oracle containing both track outputs')
+    parser.add_argument('--points-variable', default='SR_Localizations',
+        help='MATLAB cell-array variable containing one N-by-2 array per frame')
     parser.add_argument('--batch-size', type=int, default=384)
+    parser.add_argument('--max-linking-distance', type=float, default=8.0)
     args = parser.parse_args()
+    if re.fullmatch(r'[A-Za-z][A-Za-z0-9_]*', args.points_variable) is None:
+        raise ValueError('points variable must be a valid MATLAB variable name')
+    if not np.isfinite(args.max_linking_distance) or args.max_linking_distance < 0:
+        raise ValueError('max linking distance must be finite and nonnegative')
     if args.output.exists():
         raise FileExistsError(f'Refusing to overwrite {args.output}')
-    data = loadmat(args.input, variable_names=['SR_Localizations'], mat_dtype=True)
-    if 'SR_Localizations' not in data or data['SR_Localizations'].dtype != object:
-        raise ValueError('Input must contain an SR_Localizations cell array')
-    points = list(data['SR_Localizations'].ravel(order='F'))
+    data = loadmat(args.input, variable_names=[args.points_variable], mat_dtype=True)
+    if args.points_variable not in data or data[args.points_variable].dtype != object:
+        raise ValueError(f'Input must contain a {args.points_variable!r} cell array')
+    points = list(data[args.points_variable].ravel(order='F'))
     if not points:
         raise ValueError('At least one frame is required')
     for point in points:
@@ -70,19 +80,24 @@ def main():
     torch.cuda.synchronize()
     setup_seconds = time.perf_counter() - start
     start = time.perf_counter()
-    result = track(points, batch_size=args.batch_size)
+    result = track(points, max_distance=args.max_linking_distance,
+        batch_size=args.batch_size)
     torch.cuda.synchronize()
     tracking_seconds = time.perf_counter() - start
     total = sum(map(len, points))
     result['A'] = sparse.csc_matrix((np.ones(len(result['source_ids'])),
         (result['source_ids'], result['target_ids'])), shape=(total, total))
     if args.reference:
-        validate_result(result, points, loadmat(args.reference, mat_dtype=True))
+        validate_result(result, points, loadmat(args.reference, mat_dtype=True),
+            args.points_variable)
     info = {
         'input': str(args.input.resolve()),
         'input_sha256': hashlib.sha256(args.input.read_bytes()).hexdigest(),
         'gpu': torch.cuda.get_device_name(), 'torch_version': torch.__version__,
-        'batch_size': args.batch_size, 'max_linking_distance': 8, 'max_gap_closing': 1,
+        'points_variable': args.points_variable,
+        'batch_size': args.batch_size,
+        'max_linking_distance': args.max_linking_distance,
+        'max_gap_closing': 1,
         'frames': len(points), 'points': total,
         'setup_seconds': setup_seconds, 'tracking_seconds': tracking_seconds,
         'link_seconds': result['link_seconds'], 'assembly_seconds': result['assembly_seconds'],
@@ -90,7 +105,7 @@ def main():
     }
     args.output.parent.mkdir(parents=True, exist_ok=True)
     payload = {
-        'SR_Localizations': data['SR_Localizations'],
+        args.points_variable: data[args.points_variable],
         'tracks': to_cells(result['tracks']),
         'adjacency_tracks': to_cells(result['adjacency_tracks']),
         'A': result['A'], 'gpu_tracking_info_json': json.dumps(info),

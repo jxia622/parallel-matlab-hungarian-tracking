@@ -14,7 +14,7 @@ def build():
     global _EXTENSION
     if _EXTENSION is None:
         root=Path(__file__).resolve().parent
-        _EXTENSION=load(name='bal_munkres_cuda_v2',sources=[str(root/'binding.cpp'),str(root/'munkres_cuda.cu')],
+        _EXTENSION=load(name='parallel_matlab_munkres_cuda_v2',sources=[str(root/'binding.cpp'),str(root/'munkres_cuda.cu')],
             extra_cflags=['-O3'],extra_cuda_cflags=['-O3','--fmad=false','-lineinfo'],verbose=True)
     return _EXTENSION
 

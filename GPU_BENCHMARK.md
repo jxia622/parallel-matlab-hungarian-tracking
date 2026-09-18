@@ -40,7 +40,7 @@ duplicates, and distance boundaries. Local graph/serialization checks passed
 102 independent cases.
 
 The output MAT file was reloaded locally and matched all values, cell shapes,
-and MATLAB numeric classes. Direct MATLAB `isequaln` verification also passed for SR_Localizations, tracks,
+and MATLAB numeric classes. Direct MATLAB `isequaln` verification also passed for the point-cell input, tracks,
 adjacency_tracks, and A (job 24125249, successful exit).
 The initial export checker incorrectly compared SciPy's raw storage dtypes:
 MATLAB can store a double-valued cell using compact integer storage. Reading
@@ -49,34 +49,31 @@ no tracking values or exported numeric types were changed.
 
 ## How to run
 
-Code is in `gpu/`. The CRC copy is:
-`/ihome/kkim/xiac/bal-tracking-validation-20260918/tracking_acceleration`
-
-From that directory, supply absolute paths:
+Code is in `gpu/`. From the repository root on CRC, supply absolute paths:
 
 ```bash
-sbatch gpu/track_file.sbatch /absolute/input_localizations.mat /absolute/new_tracks.mat
+sbatch gpu/track_file.sbatch /absolute/input_points.mat /absolute/new_tracks.mat
 ```
 
 Add `--reference /absolute/matlab_reference.mat` to require exact equality
-before saving. Input must contain SR_Localizations. Output contains the same
-localizations, MATLAB-compatible tracks and adjacency_tracks cells, sparse A,
+before saving. Input must contain a MATLAB point-cell variable; the default is
+`SR_Localizations`, configurable with `--points-variable`. Output contains the
+same points, MATLAB-compatible tracks and adjacency_tracks cells, sparse A,
 and timing/provenance metadata. Existing outputs are never overwritten.
 
 ## Scope and limits
 
-- Supports the supplied settings: 2D finite double localizations, Hungarian
+- Supports the validated settings: 2D finite double points, Hungarian
   linking, distance 8, and MaxGapClosing=1 (which disables gap closing in this
   SimpleTracker version). The Python API accepts other finite distance limits,
   but these have not been validated here. Other gap settings are rejected.
 - Preserves the original block boundaries and input point order. Do not split
   a block into independent temporal chunks to speed it up.
 - The input file format is MATLAB v7, not v7.3/HDF5.
-- The tracker starts from the exact same saved localizations as MATLAB. It
-  does not yet integrate with or validate the separate CUDA localization
-  pipeline, whose float32 coordinates may differ from MATLAB's input.
-- The tested reference is the supplied drive's Jack/Zahra SimpleTracker
-  dependency; Bal's three-script folder did not include its own dependency.
+- The tracker starts from the exact same saved points as MATLAB. It does not
+  validate upstream detection pipelines whose coordinate precision may differ.
+- The tested reference is one of two byte-identical SimpleTracker copies found
+  with the supplied research workflow; its script folder lacked the dependency.
 - The GPU reduction used to set the Munkres bigM penalty can sum in a different
   order from MATLAB. The validated block/edge cases match exactly; inputs
   extremely close to a power-of-ten penalty boundary need additional checks.
@@ -93,4 +90,4 @@ Oracle job: 24121482. First V2 job: 3979947 (passed). Final GPU timing/export
 job: 3980164 (all tracking comparisons passed; original dtype checker then
 failed as explained above). Native MATLAB export check: 24125249 (passed, successful exit).
 Raw logs, hashes, JSON reports, and the verified candidate MAT file are in
-`crc_results`. Originals and the localization project remain unchanged.
+`crc_results`. The original reference files remain unchanged.

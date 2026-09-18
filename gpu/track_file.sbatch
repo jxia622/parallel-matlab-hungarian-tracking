@@ -1,8 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=bal-track-file
-#SBATCH --clusters=gpu
-#SBATCH --partition=a100_nvlink
-#SBATCH --account=kkim
+#SBATCH --job-name=hungarian-track
 #SBATCH --gres=gpu:1
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
@@ -18,10 +15,12 @@ if [ "$#" -lt 2 ]; then
   echo 'Provide input.mat and a new output.mat, plus optional CLI flags.' >&2
   exit 2
 fi
-TRACKING_PYTORCH_MODULE="${TRACKING_PYTORCH_MODULE:-python/pytorch_251_311_cu124}"
-TRACKING_VENV="${TRACKING_VENV:-/ihome/kkim/xiac/venvs/gpu-ulm-cu124}"
-module load "${TRACKING_PYTORCH_MODULE}"
-source "${TRACKING_VENV}/bin/activate"
+if [ -n "${TRACKING_PYTORCH_MODULE:-}" ]; then
+  module load "${TRACKING_PYTORCH_MODULE}"
+fi
+if [ -n "${TRACKING_VENV:-}" ]; then
+  source "${TRACKING_VENV}/bin/activate"
+fi
 export MAX_JOBS=4
 export OMP_NUM_THREADS=1
 export MKL_NUM_THREADS=1

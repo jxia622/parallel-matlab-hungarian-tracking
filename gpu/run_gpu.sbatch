@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=bal-track-gpu
+#SBATCH --job-name=hungarian-gpu-test
 #SBATCH --clusters=gpu
 #SBATCH --partition=a100_nvlink
 #SBATCH --account=kkim
